@@ -29,13 +29,13 @@ impl<'de> Deserialize<'de> for MusicFolder {
     {
         #[derive(Deserialize)]
         struct _MusicFolder {
-            id: String,
+            id: usize,
             name: String,
         }
-
+        
         let raw = _MusicFolder::deserialize(de)?;
         Ok(MusicFolder {
-            id: raw.id.parse().unwrap(),
+            id: raw.id,
             name: raw.name,
             _private: false,
         })
