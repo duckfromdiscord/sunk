@@ -55,10 +55,10 @@ impl IntoArg for ListType {
 #[derive(Debug, Clone)]
 #[readonly::make]
 pub struct Album {
-    pub id: u64,
+    pub id: String,
     pub name: String,
     pub artist: Option<String>,
-    pub artist_id: Option<u64>,
+    pub artist_id: Option<String>,
     pub cover_id: Option<String>,
     pub duration: u64,
     pub year: Option<u64>,
@@ -74,8 +74,8 @@ impl Album {
     ///
     /// Aside from errors the `Client` may cause, the method will error if
     /// there is no album matching the provided ID.
-    pub fn get(client: &Client, id: usize) -> Result<Album> {
-        self::get_album(client, id as u64)
+    pub fn get(client: &Client, id: String) -> Result<Album> {
+        self::get_album(client, id)
     }
 
     /// Lists all albums on the server. Supports paging.
@@ -91,7 +91,7 @@ impl Album {
     /// Returns all songs in the album.
     pub fn songs(&self, client: &Client) -> Result<Vec<Song>> {
         if self.songs.len() as u64 != self.song_count {
-            Ok(self::get_album(client, self.id)?.songs)
+            Ok(self::get_album(client, self.id.clone())?.songs)
         } else {
             Ok(self.songs.clone())
         }
@@ -99,7 +99,7 @@ impl Album {
 
     /// Returns detailed information about the album.
     pub fn info(&self, client: &Client) -> Result<AlbumInfo> {
-        let res = client.get("getArtistInfo", Query::with("id", self.id))?;
+        let res = client.get("getArtistInfo", Query::with("id", self.id.clone()))?;
         Ok(serde_json::from_value(res)?)
     }
 }
@@ -145,12 +145,12 @@ impl<'de> Deserialize<'de> for Album {
         }
 
         let raw = _Album::deserialize(de)?;
-
+        
         Ok(Album {
-            id: raw.id.parse().unwrap(),
+            id: raw.id,
             name: raw.name,
             artist: raw.artist,
-            artist_id: raw.artist_id.map(|i| i.parse().unwrap()),
+            artist_id: raw.artist_id,
             cover_id: raw.cover_art,
             duration: raw.duration,
             year: raw.year,
@@ -225,7 +225,7 @@ impl<'de> Deserialize<'de> for AlbumInfo {
     }
 }
 
-fn get_album(client: &Client, id: u64) -> Result<Album> {
+fn get_album(client: &Client, id: String) -> Result<Album> {
     let res = client.get("getAlbum", Query::with("id", id))?;
     Ok(serde_json::from_value::<Album>(res)?)
 }
