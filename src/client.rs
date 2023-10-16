@@ -151,7 +151,7 @@ impl Client {
         let path = self.url.path();
         let port = self.url.port().ok_or(Error::Url(UrlError::Address))?.to_string();
 
-        let mut url = [scheme, "://", addr, ":", &port, path, "/rest/"].concat();
+        let mut url = [scheme, "://", addr, ":", &port, path, "rest/"].concat();
         url.push_str(query);
         url.push('?');
         url.push_str(&self.auth.to_url(self.target_ver));
